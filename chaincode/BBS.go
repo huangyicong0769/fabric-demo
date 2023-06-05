@@ -33,6 +33,7 @@ type QueryResult struct {
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	comments := []Comment{
 		Comment{User: "ADSR", Text: "4chan"},
+		Comment{User: "Luv Letter", Text: "WDC"},
 	}
 
 	for i, comment := range comments {
@@ -48,7 +49,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreatePost adds a new Comment to the world state with given details
-func (s *SmartContract) CreateCommet(ctx contractapi.TransactionContextInterface, CommentID int, user string, text string) error {
+func (s *SmartContract) CreateComment(ctx contractapi.TransactionContextInterface, CommentID string, user string, text string) error {
 	comment := Comment{
 		User: user,
 		Text: text,
@@ -56,12 +57,12 @@ func (s *SmartContract) CreateCommet(ctx contractapi.TransactionContextInterface
 
 	commentAsBytes, _ := json.Marshal(comment)
 
-	return ctx.GetStub().PutState("COMMENT"+strconv.Itoa(CommentID), commentAsBytes)
+	return ctx.GetStub().PutState(CommentID, commentAsBytes)
 }
 
-// QueryCar returns the car stored in the world state with given id
-func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, CommentID int) (*Comment, error) {
-	commentAsBytes, err := ctx.GetStub().GetState("COMMENT"+strconv.Itoa(CommentID))
+// QueryComment returns the comment stored in the world state with given id
+func (s *SmartContract) QueryComment(ctx contractapi.TransactionContextInterface, CommentID string) (*Comment, error) {
+	commentAsBytes, err := ctx.GetStub().GetState(CommentID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -109,21 +110,6 @@ func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInter
 
 	return results, nil
 }
-
-// ChangeCarOwner updates the owner field of car with given id in world state
-// func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterface, carNumber string, newOwner string) error {
-// 	car, err := s.QueryCar(ctx, carNumber)
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	car.Owner = newOwner
-
-// 	carAsBytes, _ := json.Marshal(car)
-
-// 	return ctx.GetStub().PutState(carNumber, carAsBytes)
-// }
 
 // Sync Lists of Topics, Posts, Comments
 // Unfinished
