@@ -48,7 +48,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	return nil
 }
 
-// CreatePost adds a new Comment to the world state with given details
+// CreateComment adds a new Comment to the world state with given details
 func (s *SmartContract) CreateComment(ctx contractapi.TransactionContextInterface, CommentID string, user string, text string) error {
 	comment := Comment{
 		User: user,
