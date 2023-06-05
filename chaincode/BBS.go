@@ -19,7 +19,7 @@ type SmartContract struct {
 
 // Comment describes basic details of what makes up a Comment
 type Comment struct {
-	User   string `json:"user"`
+	User string `json:"user"`
 	Text string `json:"text"`
 }
 
@@ -31,46 +31,37 @@ type QueryResult struct {
 
 // InitLedger adds a base set of cars to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	// cars := []Car{
-	// 	Car{Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko"},
-	// 	Car{Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad"},
-	// 	Car{Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo"},
-	// 	Car{Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max"},
-	// 	Car{Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana"},
-	// 	Car{Make: "Peugeot", Model: "205", Colour: "purple", Owner: "Michel"},
-	// 	Car{Make: "Chery", Model: "S22L", Colour: "white", Owner: "Aarav"},
-	// 	Car{Make: "Fiat", Model: "Punto", Colour: "violet", Owner: "Pari"},
-	// 	Car{Make: "Tata", Model: "Nano", Colour: "indigo", Owner: "Valeria"},
-	// 	Car{Make: "Holden", Model: "Barina", Colour: "brown", Owner: "Shotaro"},
-	// }
+	comments := []Comment{
+		Comment{User: "ADSR", Text: "4chan"},
+	}
 
-	// for i, car := range cars {
-	// 	carAsBytes, _ := json.Marshal(car)
-	// 	err := ctx.GetStub().PutState("CAR"+strconv.Itoa(i), carAsBytes)
+	for i, comment := range comments {
+		commentAsBytes, _ := json.Marshal(comment)
+		err := ctx.GetStub().PutState("COMMENT"+strconv.Itoa(i), commentAsBytes)
 
-	// 	if err != nil {
-	// 		return fmt.Errorf("Failed to put to world state. %s", err.Error())
-	// 	}
-	// }
+		if err != nil {
+			return fmt.Errorf("Failed to put to world state. %s", err.Error())
+		}
+	}
 
 	return nil
 }
 
 // CreatePost adds a new Comment to the world state with given details
-func (s *SmartContract) CreateCommet(ctx contractapi.TransactionContextInterface, CommentID string, user string, text string) error {
+func (s *SmartContract) CreateCommet(ctx contractapi.TransactionContextInterface, CommentID int, user string, text string) error {
 	comment := Comment{
-		User:   user,
-		Text:  text,
+		User: user,
+		Text: text,
 	}
 
 	commentAsBytes, _ := json.Marshal(comment)
 
-	return ctx.GetStub().PutState(CommentID, commentAsBytes)
+	return ctx.GetStub().PutState("COMMENT"+strconv.Itoa(CommentID), commentAsBytes)
 }
 
 // QueryCar returns the car stored in the world state with given id
-func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, CommentID string) (*Comment, error) {
-	commentAsBytes, err := ctx.GetStub().GetState(CommentID)
+func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, CommentID int) (*Comment, error) {
+	commentAsBytes, err := ctx.GetStub().GetState("COMMENT"+strconv.Itoa(CommentID))
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -86,36 +77,38 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, Co
 	return comment, nil
 }
 
-// QueryAllCars returns all cars found in world state
-// func (s *SmartContract) QueryAllCars(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
-// 	startKey := ""
-// 	endKey := ""
+// QueryAllComments returns all comments found in world state
+// Should only uesd in test
+// Would not work if there are lists
+func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
+	startKey := ""
+	endKey := ""
 
-// 	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resultsIterator.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
 
-// 	results := []QueryResult{}
+	results := []QueryResult{}
 
-// 	for resultsIterator.HasNext() {
-// 		queryResponse, err := resultsIterator.Next()
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
 
-// 		if err != nil {
-// 			return nil, err
-// 		}
+		if err != nil {
+			return nil, err
+		}
 
-// 		car := new(Car)
-// 		_ = json.Unmarshal(queryResponse.Value, car)
+		comment := new(Comment)
+		_ = json.Unmarshal(queryResponse.Value, comment)
 
-// 		queryResult := QueryResult{Key: queryResponse.Key, Record: car}
-// 		results = append(results, queryResult)
-// 	}
+		queryResult := QueryResult{Key: queryResponse.Key, Record: comment}
+		results = append(results, queryResult)
+	}
 
-// 	return results, nil
-// }
+	return results, nil
+}
 
 // ChangeCarOwner updates the owner field of car with given id in world state
 // func (s *SmartContract) ChangeCarOwner(ctx contractapi.TransactionContextInterface, carNumber string, newOwner string) error {
@@ -132,16 +125,40 @@ func (s *SmartContract) QueryCar(ctx contractapi.TransactionContextInterface, Co
 // 	return ctx.GetStub().PutState(carNumber, carAsBytes)
 // }
 
+// Sync Lists of Topics, Posts, Comments
+// Unfinished
+// func (s *SmartContract) SnycLists(ctx contractapi.TransactionContextInterface, ListID string, newList []string) ([]string, error) {
+// 	oldListAsBytes, err := ctx.GetStub().GetState(ListID)
+
+// 	if err != nil {
+// 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+// 	}
+
+// 	if oldListAsBytes == nil {
+// 		return nil, fmt.Errorf("%s does not exist", ListID)
+// 	}
+
+// 	var oldList []string
+// 	_ = json.Unmarshal(oldListAsBytes, oldList)
+
+// 	if len(oldList) >= len(newList) {
+// 		return oldList, err
+// 	}
+
+// 	newListAsBytes, _ := json.Marshal(newList)
+// 	return newList, ctx.GetStub().PutState(ListID, newListAsBytes)
+// }
+
 func main() {
 
 	chaincode, err := contractapi.NewChaincode(new(SmartContract))
 
 	if err != nil {
-		fmt.Printf("Error create fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error create BBS chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
-		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error starting BBS chaincode: %s", err.Error())
 	}
 }
