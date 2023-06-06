@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"SDK/go/pkg/mod/github.com/gin-gonic/gin@v1.9.0"
-
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
