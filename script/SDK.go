@@ -84,6 +84,7 @@ func main() {
 		})
 	})
 
+	//Shuold not be used
 	r.GET("/queryAllComments", func(c *gin.Context) {
 		var result channel.Response
 		result, err := ChannelExecute("QueryAllComments", [][]byte{})
