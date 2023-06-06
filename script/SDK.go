@@ -15,19 +15,17 @@ var (
 	SDK           *fabsdk.FabricSDK
 	channelClient *channel.Client
 	channelName   = "mychannel"
-	chaincodeName = "fabcar"
+	chaincodeName = "fabcar" //to make it work in fabcar testnetwork. DO NOT CHANGE!
 	orgName       = "Org1"
 	orgAdmin      = "Admin"
 	org1Peer0     = "peer0.org1.example.com"
 	org2Peer0     = "peer0.org2.example.com"
 )
 
-type Car struct {
-	CarNumber string `json:"carnumber"`
-	Make      string `json:"make"`
-	Model     string `json:"model"`
-	Colour    string `json:"colour"`
-	Owner     string `json:"owner"`
+type Comment struct {
+	CommentID string `json:"commentID"`
+	User      string `json:"user"`
+	Text      string `json:"text"`
 }
 
 func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
@@ -55,9 +53,9 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 func main() {
 	r := gin.Default()
 
-	r.GET("/queryAllCars", func(c *gin.Context) {
+	r.GET("/queryAllComments", func(c *gin.Context) {
 		var result channel.Response
-		result, err := ChannelExecute("QueryAllCars", [][]byte{})
+		result, err := ChannelExecute("QueryAllComments", [][]byte{})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %s\n", err)
@@ -69,12 +67,11 @@ func main() {
 		})
 	})
 
-	r.POST("/queryCar", func(c *gin.Context) {
-		var car Car
-		c.BindJSON(&car)
+	r.POST("/queryComment", func(c *gin.Context) {
+		var comment Comment
+		c.BindJSON(&comment)
 		var result channel.Response
-		result, err := ChannelExecute("QueryCar", [][]byte{[]byte(car.CarNumber)})
-		fmt.Println("1")
+		result, err := ChannelExecute("QueryComment", [][]byte{[]byte(comment.CommentID)})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction :%s\n", err)
@@ -86,11 +83,11 @@ func main() {
 		})
 	})
 
-	r.POST("/createCar", func(c *gin.Context) {
-		var car Car
-		c.BindJSON(&car)
+	r.POST("/createComment", func(c *gin.Context) {
+		var comment Comment
+		c.BindJSON(&comment)
 		var result channel.Response
-		result, err := ChannelExecute("CreateCar", [][]byte{[]byte(car.CarNumber), []byte(car.Make), []byte(car.Model), []byte(car.Colour), []byte(car.Owner)})
+		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %s\n", err)
