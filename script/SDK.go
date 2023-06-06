@@ -77,16 +77,22 @@ func main() {
 	r.GET("/initList", func(c *gin.Context) {
 		TopicList = append(TopicList, Topic{TopicID: "Topic0", TopicName: "Anime"})
 		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "Post0", Caption: "New Macross project started"})
-		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{CommentID: "Comment" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "Comment" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"})
+		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{CommentID: "COMMENT" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "COMMENT" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"})
 		CommentTotal = 4
 
+		cnt := 0
 		for _, comment := range TopicList[0].PostList[0].CommentList {
-			ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+			_, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+			// fmt.Println(result)
+			if err != nil {
+				log.Fatalf("Failed to evaluate transaction: %s\n", err)
+			}
+			cnt++
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
 			"message": "Create Success",
-			"result":  string(TopicList[0].TopicID),
+			"result":  "add "+strconv.Itoa(cnt)+" comments",
 		})
 	})
 
