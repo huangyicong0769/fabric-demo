@@ -68,6 +68,12 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 	return response, nil
 }
 
+func List2str(list []any) string {
+	result := ""
+
+	return result
+}
+
 func main() {
 	CommentTotal = 2
 
