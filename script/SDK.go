@@ -30,6 +30,22 @@ type Comment struct {
 	Text      string `json:"text"`
 }
 
+type Post struct {
+	PostID string `json:"postID"`
+	Caption string `json:"caption"`
+	CommentList []Comment
+}
+
+type Topic struct {
+	TopicID string `json:"topicID"`
+	TopicName string `json:"topicName"`
+	PostList []Post
+}
+
+var (
+	TopicList []Topic
+)
+
 func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 	var err error
 	configPath := "./config.yaml"
@@ -54,6 +70,19 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 
 func main() {
 	r := gin.Default()
+
+	//Only for test
+	r.GET("/initList", func(c *gin.Context){
+		TopicList = append(TopicList, Topic{TopicID: "Topic0", TopicName: "Anime"})
+		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "Post0", Caption: "New Macross project started"})
+		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{User: "尼古拉斯赵四", Text: "rt"}, Comment{User: "LRSzwei", Text: "cy"})	
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Create Success",
+			"result":  string(TopicList[0].TopicID),
+		})
+	})
 
 	r.GET("/queryAllComments", func(c *gin.Context) {
 		var result channel.Response
@@ -102,7 +131,9 @@ func main() {
 		})
 	})
 
-	r.GET("/queryTopicList", func(c *gin.Context){})
+	r.GET("/queryTopicList", func(c *gin.Context){
+
+	})
 
 	r.POST("/queryPostList", func(c *gin.Context){})
 
