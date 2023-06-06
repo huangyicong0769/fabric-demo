@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
@@ -29,19 +30,20 @@ type Comment struct {
 }
 
 type Post struct {
-	PostID string `json:"postID"`
-	Caption string `json:"caption"`
+	PostID      string `json:"postID"`
+	Caption     string `json:"caption"`
 	CommentList []Comment
 }
 
 type Topic struct {
-	TopicID string `json:"topicID"`
+	TopicID   string `json:"topicID"`
 	TopicName string `json:"topicName"`
-	PostList []Post
+	PostList  []Post
 }
 
 var (
-	TopicList []Topic
+	TopicList    []Topic
+	CommentTotal int
 )
 
 func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
@@ -67,14 +69,20 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 }
 
 func main() {
+	CommentTotal = 2
+
 	r := gin.Default()
 
 	//Only for test
-	r.GET("/initList", func(c *gin.Context){
+	r.GET("/initList", func(c *gin.Context) {
 		TopicList = append(TopicList, Topic{TopicID: "Topic0", TopicName: "Anime"})
 		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "Post0", Caption: "New Macross project started"})
-		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{User: "尼古拉斯赵四", Text: "rt"}, Comment{User: "LRSzwei", Text: "cy"})	
+		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{CommentID: "Comment" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "Comment" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"})
+		CommentTotal = 4
 
+		for _, comment := range TopicList[0].PostList[0].CommentList {
+			ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
 			"message": "Create Success",
@@ -130,13 +138,13 @@ func main() {
 		})
 	})
 
-	r.GET("/queryTopicList", func(c *gin.Context){
+	r.GET("/queryTopicList", func(c *gin.Context) {
 
 	})
 
-	r.POST("/queryPostList", func(c *gin.Context){})
+	r.POST("/queryPostList", func(c *gin.Context) {})
 
-	r.POST("/queryCommentList", func(c *gin.Context){})
+	r.POST("/queryCommentList", func(c *gin.Context) {})
 
 	r.Run(":9099")
 }
