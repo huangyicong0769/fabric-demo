@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -101,11 +102,14 @@ func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInter
 			return nil, err
 		}
 
-		comment := new(Comment)
-		_ = json.Unmarshal(queryResponse.Value, comment)
+		if strings.Contains(queryResponse.Key, "COMMENT") {
 
-		queryResult := QueryResult{Key: queryResponse.Key, Record: comment}
-		results = append(results, queryResult)
+			comment := new(Comment)
+			_ = json.Unmarshal(queryResponse.Value, comment)
+
+			queryResult := QueryResult{Key: queryResponse.Key, Record: comment}
+			results = append(results, queryResult)
+		}
 	}
 
 	return results, nil
