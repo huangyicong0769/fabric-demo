@@ -1,2 +1,2 @@
-chaincode/vendor/
-chaincode/go.sum
+**/vendor/
+**/go.sum
