@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"SDK/go/pkg/mod/github.com/gin-gonic/gin@v1.9.0"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -67,6 +69,7 @@ func main() {
 		})
 	})
 
+	//Should not be used
 	r.POST("/queryComment", func(c *gin.Context) {
 		var comment Comment
 		c.BindJSON(&comment)
@@ -98,6 +101,12 @@ func main() {
 			"result":  string(result.Payload),
 		})
 	})
+
+	r.GET("/queryTopicList", func(c *gin.Context){})
+
+	r.POST("/queryPostList", func(c *gin.Context){})
+
+	r.POST("/queryCommentList", func(c *gin.Context){})
 
 	r.Run(":9099")
 }
