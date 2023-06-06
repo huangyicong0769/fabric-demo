@@ -103,7 +103,6 @@ func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInter
 		}
 
 		if strings.Contains(queryResponse.Key, "COMMENT") {
-
 			comment := new(Comment)
 			_ = json.Unmarshal(queryResponse.Value, comment)
 
