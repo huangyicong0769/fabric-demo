@@ -151,7 +151,14 @@ func main() {
 	})
 
 	r.GET("/queryTopicList", func(c *gin.Context) {
-		result := ""
+		result := "["
+		for i, topic := range TopicList {
+			if i != 0 {
+				result += ","
+			}
+			result += "{" + "\\\"topicID:\\\"" + topic.TopicID + "\\\",\\\"topicName\\\":\\\"" + topic.TopicName + "\\\"" + "}"
+		}
+		result += "]"
 
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
