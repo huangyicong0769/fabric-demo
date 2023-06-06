@@ -68,7 +68,7 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 	return response, nil
 }
 
-func List2str(list []any) string {
+func (s *Post) Post2str() string {
 	result := ""
 
 	return result
@@ -88,8 +88,8 @@ func main() {
 
 		cnt := 0
 		for _, comment := range TopicList[0].PostList[0].CommentList {
-			_, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
-			// fmt.Println(result)
+			result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+			fmt.Println(result)
 			if err != nil {
 				log.Fatalf("Failed to evaluate transaction: %s\n", err)
 			}
@@ -98,7 +98,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
 			"message": "Create Success",
-			"result":  "add "+strconv.Itoa(cnt)+" comments",
+			"result":  "add " + strconv.Itoa(cnt) + " comments",
 		})
 	})
 
@@ -151,7 +151,13 @@ func main() {
 	})
 
 	r.GET("/queryTopicList", func(c *gin.Context) {
+		result := ""
 
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Query Success",
+			"result":  result,
+		})
 	})
 
 	r.POST("/queryPostList", func(c *gin.Context) {})
