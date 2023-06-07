@@ -81,8 +81,8 @@ func main() {
 
 	//Only for test
 	r.GET("/initList", func(c *gin.Context) {
-		TopicList = append(TopicList, Topic{TopicID: "Topic0", TopicName: "Anime"})
-		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "Post0", Caption: "New Macross project started"})
+		TopicList = append(TopicList, Topic{TopicID: "TOPIC0", TopicName: "Anime"})
+		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "POST0", Caption: "New Macross project started"})
 		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{CommentID: "COMMENT" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "COMMENT" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"})
 		CommentTotal = 4
 
@@ -156,7 +156,7 @@ func main() {
 			if i != 0 {
 				result += ","
 			}
-			result += "{" + "\\\"topicID:\\\"" + topic.TopicID + "\\\",\\\"topicName\\\":\\\"" + topic.TopicName + "\\\"" + "}"
+			result += "{" + "\"topicID:\"" + topic.TopicID + "\",\"topicName\":\"" + topic.TopicName + "\"" + "}"
 		}
 		result += "]"
 
