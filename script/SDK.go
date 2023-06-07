@@ -192,7 +192,30 @@ func main() {
 		})
 	})
 
-	r.POST("/queryCommentList", func(c *gin.Context) {})
+	r.POST("/queryCommentList", func(c *gin.Context) {
+		topicID, postID := "", ""
+
+		// get ID
+
+		topicIndex, postIndex := 0, 0
+
+		// convert ID into index
+
+		result := "["
+		for i, comment := range TopicList[topicIndex].PostList[postIndex].CommentList {
+			if i != 0 {
+				result += ","
+			}
+			result += "{" + "\"commentID:\"" + comment.CommentID + "\",\"user\":\"" + comment.User + "\",\"text\":\"" + comment.Text + "}"
+		}
+		result += "]"
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Query Success",
+			"result":  result,
+		})
+	})
 
 	r.Run(":9099")
 }
