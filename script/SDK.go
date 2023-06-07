@@ -168,13 +168,13 @@ func main() {
 	})
 
 	r.POST("/queryPostList", func(c *gin.Context) {
-		topicID := ""
+		topicID := c.Query("topicID")
 
-		// get topicID
+		topicIndex, err := strconv.Atoi(topicID[5:])
 
-		topicIndex := 0
-
-		// convert ID into index
+		if err != nil {
+			log.Fatalf("Failed to query list: %s\n", err)
+		}
 
 		result := "["
 		for i, post := range TopicList[topicIndex].PostList {
@@ -193,13 +193,19 @@ func main() {
 	})
 
 	r.POST("/queryCommentList", func(c *gin.Context) {
-		topicID, postID := "", ""
+		topicID, postID := c.Query("topicID"), c.Query("postID")
 
-		// get ID
+		topicIndex, err := strconv.Atoi(topicID[5:])
 
-		topicIndex, postIndex := 0, 0
+		if err != nil {
+			log.Fatalf("Failed to query list: %s\n", err)
+		}
 
-		// convert ID into index
+		postIndex, err := strconv.Atoi(postID[4:])
+
+		if err != nil {
+			log.Fatalf("Failed to query list: %s\n", err)
+		}
 
 		result := "["
 		for i, comment := range TopicList[topicIndex].PostList[postIndex].CommentList {
