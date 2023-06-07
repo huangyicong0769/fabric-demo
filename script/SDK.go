@@ -167,10 +167,10 @@ func main() {
 		})
 	})
 
-	r.POST("/queryPostList", func(c *gin.Context) {
+	r.GET("/queryPostList", func(c *gin.Context) {
 		topicID := c.Query("topicID")
 
-		topicIndex, err := strconv.Atoi(topicID[5:])
+		topicIndex, err := strconv.Atoi(string(topicID[5:]))
 
 		if err != nil {
 			log.Fatalf("Failed to query list: %s\n", err)
@@ -192,7 +192,7 @@ func main() {
 		})
 	})
 
-	r.POST("/queryCommentList", func(c *gin.Context) {
+	r.GET("/queryCommentList", func(c *gin.Context) {
 		topicID, postID := c.Query("topicID"), c.Query("postID")
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
