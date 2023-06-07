@@ -68,11 +68,11 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 	return response, nil
 }
 
-func (s *Post) Post2str() string {
-	result := ""
+// func (s *Post) Post2str() string {
+// 	result := ""
 
-	return result
-}
+// 	return result
+// }
 
 func main() {
 	CommentTotal = 2
@@ -167,7 +167,30 @@ func main() {
 		})
 	})
 
-	r.POST("/queryPostList", func(c *gin.Context) {})
+	r.POST("/queryPostList", func(c *gin.Context) {
+		topicID := ""
+
+		// get topicID
+
+		topicIndex := 0
+
+		// convert ID into index
+
+		result := "["
+		for i, post := range TopicList[topicIndex].PostList {
+			if i != 0 {
+				result += ","
+			}
+			result += "{" + "\"postID:\"" + post.PostID + "\",\"caption\":\"" + post.Caption + "\"" + "}"
+		}
+		result += "]"
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Query Success",
+			"result":  result,
+		})
+	})
 
 	r.POST("/queryCommentList", func(c *gin.Context) {})
 
