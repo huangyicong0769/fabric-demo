@@ -134,21 +134,22 @@ func main() {
 		})
 	})
 
-	r.POST("/createComment", func(c *gin.Context) {
-		var comment Comment
-		c.BindJSON(&comment)
-		var result channel.Response
-		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
-		fmt.Println(result)
-		if err != nil {
-			log.Fatalf("Failed to evaluate transaction: %s\n", err)
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"code":    "200",
-			"message": "Create Success",
-			"result":  string(result.Payload),
-		})
-	})
+	//Only for testing chaincode
+	// r.POST("/createComment", func(c *gin.Context) {
+	// 	var comment Comment
+	// 	c.BindJSON(&comment)
+	// 	var result channel.Response
+	// 	result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+	// 	fmt.Println(result)
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to evaluate transaction: %s\n", err)
+	// 	}
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"code":    "200",
+	// 		"message": "Create Success",
+	// 		"result":  string(result.Payload),
+	// 	})
+	// })
 
 	r.GET("/queryTopicList", func(c *gin.Context) {
 		result := "["
@@ -221,6 +222,14 @@ func main() {
 			"message": "Query Success",
 			"result":  result,
 		})
+	})
+
+	r.GET("/createComment", func(c *gin.Context) {
+
+	})
+
+	r.GET("/createPost", func(c *gin.Context) {
+
 	})
 
 	r.Run(":9099")
