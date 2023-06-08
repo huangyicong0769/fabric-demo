@@ -197,13 +197,11 @@ func main() {
 		topicID, postID := c.Query("topicID"), c.Query("postID")
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
-
 		if err != nil {
 			log.Fatalf("Failed to query list: %s\n", err)
 		}
 
 		postIndex, err := strconv.Atoi(postID[4:])
-
 		if err != nil {
 			log.Fatalf("Failed to query list: %s\n", err)
 		}
@@ -225,7 +223,32 @@ func main() {
 	})
 
 	r.GET("/createComment", func(c *gin.Context) {
+		topicID, postID := c.Query("topicID"), c.Query("postID")
+		var comment Comment
+		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.Query("user"), c.Query("text")
 
+		topicIndex, err := strconv.Atoi(topicID[5:])
+		if err != nil {
+			log.Fatalf("Failed to create comment: %s\n", err)
+		}
+
+		postIndex, err := strconv.Atoi(postID[4:])
+		if err != nil {
+			log.Fatalf("Failed to create comment: %s\n", err)
+		}
+
+		TopicList[topicIndex].PostList[postIndex].CommentList = append(TopicList[topicIndex].PostList[postIndex].CommentList, comment)
+		CommentTotal++
+		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+		fmt.Println(result)
+		if err != nil {
+			log.Fatalf("Failed to create comment: %s\n", err)
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Create Success",
+			"result":  string(result.Payload),
+		})
 	})
 
 	r.GET("/createPost", func(c *gin.Context) {
