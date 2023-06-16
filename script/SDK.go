@@ -110,7 +110,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to evaluate transaction: %s\n", err)
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
 			"message": "Query All Success",
@@ -259,8 +259,9 @@ func main() {
 		topicID := c.PostForm("topicID")
 		var post Post
 		post.Caption = c.PostForm("caption")
-		comment := &post.CommentList[0]
+		var comment Comment
 		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.PostForm("user"), c.PostForm("text")
+		post.CommentList = append(post.CommentList, comment)
 		CommentTotal++
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
