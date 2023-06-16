@@ -20,8 +20,10 @@ type SmartContract struct {
 
 // Comment describes basic details of what makes up a Comment
 type Comment struct {
-	User string `json:"user"`
-	Text string `json:"text"`
+	User    string `json:"user"`
+	Text    string `json:"text"`
+	TopicID string `json:topicID`
+	PostID  string `json:postID`
 }
 
 // QueryResult structure used for handling result of query
@@ -33,8 +35,8 @@ type QueryResult struct {
 // InitLedger adds a base set of cars to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	comments := []Comment{
-		Comment{User: "ADSR", Text: "4chan"},
-		Comment{User: "Luv Letter", Text: "WDC"},
+		Comment{User: "ADSR", Text: "4chan", TopicID: "TOPIC0", PostID: "POST0"},
+		Comment{User: "Luv Letter", Text: "WDC", TopicID: "TOPIC0", PostID: "POST0"},
 	}
 
 	for i, comment := range comments {
@@ -50,10 +52,12 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateComment adds a new Comment to the world state with given details
-func (s *SmartContract) CreateComment(ctx contractapi.TransactionContextInterface, CommentID string, user string, text string) error {
+func (s *SmartContract) CreateComment(ctx contractapi.TransactionContextInterface, CommentID string, user string, text string, topicID string, postID string) error {
 	comment := Comment{
 		User: user,
 		Text: text,
+		TopicID: topicID,
+		PostID: postID,
 	}
 
 	commentAsBytes, _ := json.Marshal(comment)
@@ -80,8 +84,6 @@ func (s *SmartContract) QueryComment(ctx contractapi.TransactionContextInterface
 }
 
 // QueryAllComments returns all comments found in world state
-// Should only uesd in test
-// Would not work if there are lists
 func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
 	startKey := ""
 	endKey := ""
@@ -113,30 +115,6 @@ func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInter
 
 	return results, nil
 }
-
-// Sync Lists of Topics, Posts, Comments
-// Unfinished
-// func (s *SmartContract) SnycLists(ctx contractapi.TransactionContextInterface, ListID string, newList []string) ([]string, error) {
-// 	oldListAsBytes, err := ctx.GetStub().GetState(ListID)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
-// 	}
-
-// 	if oldListAsBytes == nil {
-// 		return nil, fmt.Errorf("%s does not exist", ListID)
-// 	}
-
-// 	var oldList []string
-// 	_ = json.Unmarshal(oldListAsBytes, oldList)
-
-// 	if len(oldList) >= len(newList) {
-// 		return oldList, err
-// 	}
-
-// 	newListAsBytes, _ := json.Marshal(newList)
-// 	return newList, ctx.GetStub().PutState(ListID, newListAsBytes)
-// }
 
 func main() {
 

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
@@ -32,7 +33,7 @@ type Comment struct {
 type Post struct {
 	PostID      string `json:"postID"`
 	Caption     string `json:"caption"`
-	CommentList []Comment
+	CommentList []string
 }
 
 type Topic struct {
@@ -83,18 +84,21 @@ func main() {
 	r.GET("/initList", func(c *gin.Context) {
 		TopicList = append(TopicList, Topic{TopicID: "TOPIC0", TopicName: "Anime"})
 		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "POST0", Caption: "New Macross project started"})
-		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, Comment{CommentID: "COMMENT" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "COMMENT" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"})
+		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, "COMMENT" + strconv.Itoa(2), "COMMENT" + strconv.Itoa(3))
 		CommentTotal = 4
 
+		commentList := []Comment{Comment{CommentID: "COMMENT" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "COMMENT" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"}}
+
 		cnt := 0
-		for _, comment := range TopicList[0].PostList[0].CommentList {
-			result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+		for _, comment := range commentList {
+			result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text), []byte("TOPIC0"), []byte("POST0")})
 			fmt.Println(result)
 			if err != nil {
 				log.Fatalf("Failed to evaluate transaction: %s\n", err)
 			}
 			cnt++
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":    "200",
 			"message": "Create Success",
@@ -210,7 +214,16 @@ func main() {
 		}
 
 		result := "["
-		for i, comment := range TopicList[topicIndex].PostList[postIndex].CommentList {
+		for i, commentID := range TopicList[topicIndex].PostList[postIndex].CommentList {
+			qcomment, err := ChannelExecute("QueryComment", [][]byte{[]byte(commentID)})
+			fmt.Println(result)
+			if err != nil {
+				log.Fatalf("Failed to evaluate transaction :%s\n", err)
+			}
+
+			comment := new(Comment)
+			_ = json.Unmarshal(qcomment.Payload, comment)
+
 			if i != 0 {
 				result += ","
 			}
@@ -241,8 +254,8 @@ func main() {
 			log.Fatalf("Failed to create comment: %s\n", err)
 		}
 
-		TopicList[topicIndex].PostList[postIndex].CommentList = append(TopicList[topicIndex].PostList[postIndex].CommentList, comment)
-		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+		TopicList[topicIndex].PostList[postIndex].CommentList = append(TopicList[topicIndex].PostList[postIndex].CommentList, comment.CommentID)
+		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text), []byte(topicID), []byte(postID)})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to create comment: %s\n", err)
@@ -261,7 +274,7 @@ func main() {
 		post.Caption = c.PostForm("caption")
 		var comment Comment
 		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.PostForm("user"), c.PostForm("text")
-		post.CommentList = append(post.CommentList, comment)
+		post.CommentList = append(post.CommentList, comment.CommentID)
 		CommentTotal++
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
@@ -270,7 +283,7 @@ func main() {
 		}
 
 		TopicList[topicIndex].PostList = append(TopicList[topicIndex].PostList, post)
-		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text)})
+		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text), []byte(topicID), []byte("POST" + strconv.Itoa(len(TopicList[topicIndex].PostList)))})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to create comment: %s\n", err)
@@ -281,6 +294,12 @@ func main() {
 			"message": "Create Success",
 			"result":  string(result.Payload),
 		})
+	})
+
+	r.GET("/saveList", func(c *gin.Context) {
+	})
+
+	r.GET("/readList", func(c *gin.Context) {
 	})
 
 	r.Run(":9099")
