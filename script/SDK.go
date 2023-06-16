@@ -171,8 +171,8 @@ func main() {
 		})
 	})
 
-	r.GET("/queryPostList", func(c *gin.Context) {
-		topicID := c.Query("topicID")
+	r.POST("/queryPostList", func(c *gin.Context) {
+		topicID := c.PostForm("topicID")
 
 		topicIndex, err := strconv.Atoi(string(topicID[5:]))
 
@@ -196,8 +196,8 @@ func main() {
 		})
 	})
 
-	r.GET("/queryCommentList", func(c *gin.Context) {
-		topicID, postID := c.Query("topicID"), c.Query("postID")
+	r.POST("/queryCommentList", func(c *gin.Context) {
+		topicID, postID := c.PostForm("topicID"), c.PostForm("postID")
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
 		if err != nil {
@@ -222,13 +222,15 @@ func main() {
 			"code":    "200",
 			"message": "Query Success",
 			"result":  result,
+			// "result" : strconv.Itoa(topicIndex) + strconv.Itoa(postIndex),
+			// "result": topicID + " " + postID,
 		})
 	})
 
-	r.GET("/createComment", func(c *gin.Context) {
-		topicID, postID := c.Query("topicID"), c.Query("postID")
+	r.POST("/createComment", func(c *gin.Context) {
+		topicID, postID := c.PostForm("topicID"), c.PostForm("postID")
 		var comment Comment
-		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.Query("user"), c.Query("text")
+		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.PostForm("user"), c.PostForm("text")
 		CommentTotal++
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
@@ -255,12 +257,12 @@ func main() {
 		})
 	})
 
-	r.GET("/createPost", func(c *gin.Context) {
-		topicID := c.Query("topicID")
+	r.POST("/createPost", func(c *gin.Context) {
+		topicID := c.PostForm("topicID")
 		var post Post
-		post.Caption = c.Query("caption")
+		post.Caption = c.PostForm("caption")
 		comment := &post.CommentList[0]
-		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.Query("user"), c.Query("text")
+		comment.CommentID, comment.User, comment.Text = "COMMENT"+strconv.Itoa(CommentTotal), c.PostForm("user"), c.PostForm("text")
 		CommentTotal++
 
 		topicIndex, err := strconv.Atoi(topicID[5:])
