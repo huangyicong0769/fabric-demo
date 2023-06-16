@@ -222,8 +222,6 @@ func main() {
 			"code":    "200",
 			"message": "Query Success",
 			"result":  result,
-			// "result" : strconv.Itoa(topicIndex) + strconv.Itoa(postIndex),
-			// "result": topicID + " " + postID,
 		})
 	})
 
