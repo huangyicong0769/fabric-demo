@@ -238,7 +238,7 @@ func main() {
 			if i != 0 {
 				result += ","
 			}
-			result += "{" + "\"commentID:\"" + comment.CommentID + "\",\"user\":\"" + comment.User + "\",\"text\":\"" + comment.Text + "}"
+			result += "{" + "\"commentID:\"" + commentID + "\",\"user\":\"" + comment.User + "\",\"text\":\"" + comment.Text + "}"
 		}
 		result += "]"
 
