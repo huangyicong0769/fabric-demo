@@ -282,8 +282,9 @@ func main() {
 			log.Fatalf("Failed to create comment: %s\n", err)
 		}
 
+		post.PostID = "POST" + strconv.Itoa(len(TopicList[topicIndex].PostList))
 		TopicList[topicIndex].PostList = append(TopicList[topicIndex].PostList, post)
-		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text), []byte(topicID), []byte("POST" + strconv.Itoa(len(TopicList[topicIndex].PostList)))})
+		result, err := ChannelExecute("CreateComment", [][]byte{[]byte(comment.CommentID), []byte(comment.User), []byte(comment.Text), []byte(topicID), []byte(post.PostID)})
 		fmt.Println(result)
 		if err != nil {
 			log.Fatalf("Failed to create comment: %s\n", err)
