@@ -69,11 +69,22 @@ func ChannelExecute(funcName string, args [][]byte) (channel.Response, error) {
 	return response, nil
 }
 
-// func (s *Post) Post2str() string {
-// 	result := ""
+func SaveList() error{
+	for _, topic := range TopicList{
+		_, err := ChannelExecute("CreateTopic", [][]byte{[]byte(topic.TopicID), []byte(topic.TopicName)})
+		if err != nil {
+			log.Fatalf("Failed to save lists: %s\n", err)
+		}
 
-// 	return result
-// }
+		for _, post := range topic.PostList {
+			_, err := ChannelExecute("CreatePost", [][]byte{[]byte(topic.TopicID + post.PostID), []byte(post.Caption), []byte(topic.TopicID),})
+			if err != nil {
+				log.Fatalf("Failed to save lists: %s\n", err)
+			}
+		}
+	}
+	return nil
+}
 
 func main() {
 	CommentTotal = 2
@@ -84,10 +95,10 @@ func main() {
 	r.GET("/initList", func(c *gin.Context) {
 		TopicList = append(TopicList, Topic{TopicID: "TOPIC0", TopicName: "Anime"})
 		TopicList[0].PostList = append(TopicList[0].PostList, Post{PostID: "POST0", Caption: "New Macross project started"})
-		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, "COMMENT" + strconv.Itoa(2), "COMMENT" + strconv.Itoa(3))
-		CommentTotal = 4
+		TopicList[0].PostList[0].CommentList = append(TopicList[0].PostList[0].CommentList, "COMMENT" + strconv.Itoa(0), "COMMENT" + strconv.Itoa(1))
+		CommentTotal = 2
 
-		commentList := []Comment{Comment{CommentID: "COMMENT" + strconv.Itoa(2), User: "尼古拉斯赵四", Text: "rt"}, Comment{CommentID: "COMMENT" + strconv.Itoa(3), User: "LRSzwei", Text: "cy"}}
+		commentList := []Comment{{CommentID: "COMMENT" + strconv.Itoa(0), User: "尼古拉斯赵四", Text: "rt"}, {CommentID: "COMMENT" + strconv.Itoa(1), User: "LRSzwei", Text: "cy"}}
 
 		cnt := 0
 		for _, comment := range commentList {
@@ -298,9 +309,105 @@ func main() {
 	})
 
 	r.GET("/saveList", func(c *gin.Context) {
+		err := SaveList()
+		if err != nil {
+			log.Fatalf("Failed to save lists: %s\n", err)
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Save Success",
+			"result":  "",
+		})
 	})
 
-	r.GET("/readList", func(c *gin.Context) {
+	r.GET("/rebuildList", func(c *gin.Context) {
+		TopicList = nil
+
+		i := 0
+		for {
+			TopicID := "TOPIC" + strconv.Itoa(i)
+			result, err := ChannelExecute("QueryTopic", [][]byte{[]byte(TopicID)})
+			if err != nil {
+				log.Fatalf("Failed to evaluate transaction: %s\n", err)
+			}
+
+			if result.Payload == nil {
+				break
+			}
+
+			topic := new(Topic)
+			_ = json.Unmarshal(result.Payload, topic)
+			topic.TopicID = TopicID
+
+			j := 0
+			for {
+				PostID := TopicID + "POST" + strconv.Itoa(j)
+				result, err := ChannelExecute("QueryPost", [][]byte{[]byte(PostID)})
+				if err != nil {
+					log.Fatalf("Failed to evaluate transaction: %s\n", err)
+				}
+	
+				if result.Payload == nil {
+					break
+				}
+	
+				post := new(Post)
+				_ = json.Unmarshal(result.Payload, post)
+				post.PostID = PostID[(len(TopicID)):]
+
+				topic.PostList = append(topic.PostList, *post)
+
+				j++
+			}
+
+			TopicList = append(TopicList, *topic)
+
+			i++
+		}
+
+		CommentTotal = 0
+		for {
+			CommentID := "COMMENT" + strconv.Itoa(CommentTotal)
+			result, err := ChannelExecute("QueryComment", [][]byte{[]byte(CommentID)})
+			if err != nil {
+				log.Fatalf("Failed to evaluate transaction: %s\n", err)
+			}
+
+			if result.Payload == nil {
+				break
+			}
+
+			type RichComment struct {
+				User    string `json:"user"`
+				Text    string `json:"text"`
+				TopicID string `json:topicID`
+				PostID  string `json:postID`
+			}
+
+			comment := new(RichComment)
+			_ = json.Unmarshal(result.Payload, comment)
+
+			topicIndex, err := strconv.Atoi(comment.TopicID[5:])
+			if err != nil {
+				log.Fatalf("Failed to create comment: %s\n", err)
+			}
+	
+			postIndex, err := strconv.Atoi(comment.PostID[4:])
+			if err != nil {
+				log.Fatalf("Failed to create comment: %s\n", err)
+			}
+
+			TopicList[topicIndex].PostList[postIndex].CommentList = append(TopicList[topicIndex].PostList[postIndex].CommentList, CommentID)
+
+			CommentTotal++
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    "200",
+			"message": "Rebuild Success",
+			"result":  "",
+		})
 	})
 
 	r.Run(":9099")
