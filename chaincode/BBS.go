@@ -124,6 +124,34 @@ func (s *SmartContract) QueryAllComments(ctx contractapi.TransactionContextInter
 	return results, nil
 }
 
+func (s *SmartContract) QueryCommentNumber(ctx contractapi.TransactionContextInterface) (int, error) {
+	startKey := ""
+	endKey := ""
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return 0, err
+	}
+	defer resultsIterator.Close()
+
+	results := 0
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return 0, err
+		}
+
+		if strings.Contains(queryResponse.Key, "COMMENT") {
+			results++
+		}
+	}
+
+	return results, nil
+}
+
 // CreateTopic adds a new Topic to the world state with given details
 func (s *SmartContract) CreateTopic(ctx contractapi.TransactionContextInterface, TopicID string, topicName string) error {
 	topic := Topic{
@@ -151,6 +179,34 @@ func (s *SmartContract) QueryTopic(ctx contractapi.TransactionContextInterface, 
 	_ = json.Unmarshal(topicAsBytes, topic)
 
 	return topic, nil
+}
+
+func (s *SmartContract) QueryTopicNumber(ctx contractapi.TransactionContextInterface) (int, error) {
+	startKey := ""
+	endKey := ""
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return 0, err
+	}
+	defer resultsIterator.Close()
+
+	results := 0
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return 0, err
+		}
+
+		if strings.Contains(queryResponse.Key, "TOPIC") && !strings.Contains(queryResponse.Key, "POST") {
+			results++
+		}
+	}
+
+	return results, nil
 }
 
 // CreatePost adds a new Post to the world state with given details
@@ -181,6 +237,34 @@ func (s *SmartContract) QueryPost(ctx contractapi.TransactionContextInterface, P
 	_ = json.Unmarshal(postAsBytes, post)
 
 	return post, nil
+}
+
+func (s *SmartContract) QueryPostNumber(ctx contractapi.TransactionContextInterface, topicID string) (int, error) {
+	startKey := ""
+	endKey := ""
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return 0, err
+	}
+	defer resultsIterator.Close()
+
+	results := 0
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return 0, err
+		}
+
+		if strings.Contains(queryResponse.Key, topicID) && strings.Contains(queryResponse.Key, "POST") {
+			results++
+		}
+	}
+
+	return results, nil
 }
 
 func main() {

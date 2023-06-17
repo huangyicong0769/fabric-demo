@@ -324,8 +324,18 @@ func main() {
 	r.GET("/rebuildList", func(c *gin.Context) {
 		TopicList = nil
 
+		qtopicNum, err := ChannelExecute("QueryTopicNumber", [][]byte{})
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %s\n", err)
+		}
+
+		topicNum, err := strconv.Atoi(string(qtopicNum.Payload))
+		if err != nil {
+			log.Fatalf("Failed to rebuild list: %s\n", err)
+		}
+		
 		i := 0
-		for {
+		for i < topicNum {
 			TopicID := "TOPIC" + strconv.Itoa(i)
 			result, err := ChannelExecute("QueryTopic", [][]byte{[]byte(TopicID)})
 			if err != nil {
@@ -340,8 +350,18 @@ func main() {
 			_ = json.Unmarshal(result.Payload, topic)
 			topic.TopicID = TopicID
 
+			qpostNum, err := ChannelExecute("QueryPostNumber", [][]byte{[]byte(TopicID)})
+			if err != nil {
+				log.Fatalf("Failed to evaluate transaction: %s\n", err)
+			}
+	
+			postNum, err := strconv.Atoi(string(qpostNum.Payload))
+			if err != nil {
+				log.Fatalf("Failed to rebuild list: %s\n", err)
+			}
+
 			j := 0
-			for {
+			for j < postNum {
 				PostID := TopicID + "POST" + strconv.Itoa(j)
 				result, err := ChannelExecute("QueryPost", [][]byte{[]byte(PostID)})
 				if err != nil {
@@ -366,8 +386,18 @@ func main() {
 			i++
 		}
 
+		qcommentNum, err := ChannelExecute("QueryCommentNumber", [][]byte{})
+		if err != nil {
+			log.Fatalf("Failed to evaluate transaction: %s\n", err)
+		}
+
+		commentNum, err := strconv.Atoi(string(qcommentNum.Payload))
+		if err != nil {
+			log.Fatalf("Failed to rebuild list: %s\n", err)
+		}
+
 		CommentTotal = 0
-		for {
+		for CommentTotal < commentNum{
 			CommentID := "COMMENT" + strconv.Itoa(CommentTotal)
 			result, err := ChannelExecute("QueryComment", [][]byte{[]byte(CommentID)})
 			if err != nil {
